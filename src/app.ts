@@ -1,3 +1,39 @@
+//project state management
+class ProjectState {
+  private projects: any[] = [];
+  private static instance: ProjectState;
+  private listeners: any[] = [];
+
+  private constructor() {}
+
+  static getInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+    this.instance = new ProjectState();
+    return this.instance;
+  }
+
+  addListener(listenerFn: Function) {
+    this.listeners.push(listenerFn);
+  }
+
+  addProject(title: string, description: string, numberOfPeople: number) {
+    const newProject = {
+      id: Math.random().toString(),
+      title: title,
+      description: description,
+      people: numberOfPeople,
+    };
+    this.projects.push(newProject);
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.projects.slice());
+    }
+  }
+}
+
+const projectState = ProjectState.getInstance();
+
 //validation
 interface Validatable {
   value: string | number;
@@ -15,11 +51,13 @@ function validate(validatable: Validatable) {
   }
 
   if (validatable.minLength != null && typeof validatable.value === "string") {
-    isValid = isValid && validatable.value.trim().length >= validatable.minLength;
+    isValid =
+      isValid && validatable.value.trim().length >= validatable.minLength;
   }
 
   if (validatable.maxLength != null && typeof validatable.value === "string") {
-    isValid = isValid && validatable.value.trim().length <= validatable.maxLength;
+    isValid =
+      isValid && validatable.value.trim().length <= validatable.maxLength;
   }
 
   if (validatable.min != null && typeof validatable.value === "number") {
@@ -50,31 +88,53 @@ class ProjectList {
   templateElement: HTMLTemplateElement;
   hostElement: HTMLDivElement;
   element: HTMLElement;
+  assignedProjects: any[];
 
-  constructor(private type: 'active' | 'finished'){
-    this.templateElement = document.getElementById("project-list")! as HTMLTemplateElement;
+  constructor(private type: "active" | "finished") {
+    this.templateElement = document.getElementById(
+      "project-list"
+    )! as HTMLTemplateElement;
     this.hostElement = document.getElementById("app")! as HTMLDivElement;
+    this.assignedProjects = [];
 
-    const importedNode = document.importNode(this.templateElement.content, true);
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
     this.element = importedNode.firstElementChild as HTMLElement;
-    this.element.id = `${type}-projects`;
+    this.element.id = `${this.type}-projects`;
+
+    projectState.addListener((projects: any[]) => {
+      this.assignedProjects = projects;
+      this.renderProjects();
+    });
+
     this.attach();
     this.renderContent();
-
   }
 
-  private renderContent(){
+  private renderProjects() {
+    const listEl = document.getElementById(
+      `${this.type}-project-list`
+    )! as HTMLUListElement;
+    for (const prjItem of this.assignedProjects) {
+      console.log(prjItem.title);
+      const listItem = document.createElement("li");
+      listItem.textContent = prjItem.title;
+      listEl.appendChild(listItem);
+    }
+  }
+
+  private renderContent() {
     const listId = `${this.type}-project-list`;
-    this.element.querySelector('ul')!.id = listId;
-    this.element.querySelector('h2')!.textContent = this.type.toUpperCase() + ' PROJECTS';
-
+    this.element.querySelector("ul")!.id = listId;
+    this.element.querySelector("h2")!.textContent =
+      this.type.toUpperCase() + " PROJECTS";
   }
 
-  private attach(){
-    this.hostElement.insertAdjacentElement('beforeend', this.element);
+  private attach() {
+    this.hostElement.insertAdjacentElement("beforeend", this.element);
   }
-
-
 }
 
 class ProjectInput {
@@ -153,6 +213,7 @@ class ProjectInput {
     if (Array.isArray(userInputs)) {
       const [title, desc, people] = userInputs;
       console.log(title, desc, people);
+      projectState.addProject(title, desc, people);
       this.clearInputs();
     }
   }
@@ -167,5 +228,5 @@ class ProjectInput {
 }
 
 const projectInput = new ProjectInput();
-const activeProjects = new ProjectList('active');
-const finishedProjects = new ProjectList('finished');
+const activeProjects = new ProjectList("active");
+const finishedProjects = new ProjectList("finished");
