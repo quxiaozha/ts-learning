@@ -193,7 +193,7 @@ class ProjectItem
   }
 
   dragEndHandler(event: DragEvent): void {
-    console.log("Drag end.");
+    //console.log("Drag end.");
   }
 
   configure(): void {
