@@ -1,7 +1,7 @@
-import { Component } from "./base-component.js";
-import { Validatable, validate } from "../util/validation.js";
-import { autobind } from "../decorators/autobind.js";
-import { projectState } from "../state/project-state.js";
+import { Component } from "./base-component";
+import { Validatable, validate } from "../util/validation";
+import { autobind } from "../decorators/autobind";
+import { projectState } from "../state/project-state";
 
 export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   titleInputElement: HTMLInputElement;
@@ -10,9 +10,9 @@ export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
 
   constructor() {
     super("project-input", "app", true, "user-input");
-    this.titleInputElement = this.element.querySelector("#title")!;
-    this.descriptionInputElement = this.element.querySelector("#description")!;
-    this.peopleInputElement = this.element.querySelector("#people")!;
+    this.titleInputElement = this.element.querySelector("#title")! as HTMLInputElement;
+    this.descriptionInputElement = this.element.querySelector("#description")! as HTMLInputElement;
+    this.peopleInputElement = this.element.querySelector("#people")! as HTMLInputElement;
     this.configure();
   }
 
